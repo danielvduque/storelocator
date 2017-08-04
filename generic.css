@@ -1,0 +1,94 @@
+/* MAP ABASTIBLE - STYLE */
+
+/* Optional: Makes the sample page fill the window. */
+html, body {
+  height: 90%;
+  display: block;
+}
+
+/* Always set the map height explicitly to define the size of the div
+ * element that contains the map. */
+
+#map {
+	width: 100%;
+	max-height: 250px;
+	display: block;
+}
+
+#mapControls {
+	width: 100%;
+	height: auto;
+	display: block;
+	text-align: center;
+	margin-bottom: 1em;
+}
+
+#mapControls > label {
+	width: 20%;
+	height: auto;
+	margin: 0;
+	display: inline-block;
+	text-align: left;
+}
+
+#mapControls > #addressInput {
+	border: 1px solid #c3c3c3;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 13px;
+    height: auto;
+    padding: 0.5em;
+    width: 500px;
+    width: 58%;
+    margin-right: 2%;
+    text-align: left;
+}
+
+#mapControls > #searchButton {
+	background-color: rgb(255, 88, 0);
+	border-radius: 2em;
+	color: #fff;
+	height: auto;
+	opacity: 1;
+	padding: .48em 4em;
+	width: auto;
+	line-height: 1.2em;
+	font-size: 14px;
+	box-sizing: border-box;
+	cursor: pointer;
+	border:  1px solid #ff5800;
+	margin: 0;
+	text-transform: uppercase;
+	width: 19.3%;
+}
+
+.abastible-address,
+.abastible-name {
+	background-color: #ff5800;
+	box-sizing: border-box;
+	color: #fff;
+	display: block;
+	padding: 4px;
+	width: 100%;
+	font-weight: 700;
+}
+
+.abastible-address {
+	background-color: #fff;
+	color: #333;
+	font-weight: 300;
+}
+
+.swal2-modal .swal2-styled {
+	background-color: #ff5800 !important;
+	border-radius: 2em !important;
+}
+
+.swal2-modal .swal2-styled:focus {
+	outline: none;
+}
+
+.swal2-modal .swal2-image {
+	margin: 0 auto !important;
+}
+

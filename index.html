@@ -1,41 +1,53 @@
 <!DOCTYPE html >
   <head>
-    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
-    <title>Google Maps Search</title>
-  <style>
-    /* Always set the map height explicitly to define the size of the div
-     * element that contains the map. */
-    #map {
-      height: 100%;
-    }
-    /* Optional: Makes the sample page fill the window. */
-    html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-    }
- </style>
-    
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.6.6/sweetalert2.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.6.6/sweetalert2.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/2.4.1/core.js"></script>
-  
-  </head>
-  <body style="margin:0px; padding:0px;" onload="initMap()">
-    <div>
-         <label for="addressInput">Dirección:</label>
-         <input type="text" id="addressInput" size="35"/>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+	<title>Google Maps Search</title>
 
-        <input type="button" id="searchButton" value="Search"/>
+	<link rel="stylesheet" href="generic.css">
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.6.6/sweetalert2.min.js"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.6.6/sweetalert2.min.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/2.4.1/core.js"></script>
+  </head>
+
+  <body onload="initMap()">
+
+
+
+    <div id="mapControls">
+        <label for="addressInput">Ingresa dirección</label>
+        <input type="text" id="addressInput" size="35" placeholder="Santiago, Rancagua, Valdivia... "/>
+        <input type="button" id="searchButton" value="BUSCAR"/>
+
+        <div style="display: none;"><select id="locationSelect"></select></div>
     </div>
-    <div><select id="locationSelect" style="display: none;"></select></div>
-    <div id="map" style="width: 100%; height: 90%"></div>
+
+    <div id="map" style="width: 100%; height: 100%"></div>
+
     <script>
       var map;
       var markers = [];
       var infoWindow;
       var locationSelect;
+      var mapType;
+      var params;
+
+      function getUrlVars()
+      {
+          var vars = [], hash;
+          var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+          for(var i = 0; i < hashes.length; i++)
+          {
+              hash = hashes[i].split('=');
+              vars.push(hash[0]);
+              vars[hash[0]] = hash[1];
+          }
+          return vars;
+      }
+
+      params = getUrlVars();
+      mapType = (params && params["maptype"]) ? params["maptype"] : "office";
 
         function initMap() {
           var sydney = {lat: -33.4727879, lng: -70.6298313};
@@ -62,6 +74,7 @@
             }
           };
         }
+        
 
       function searchLocations() {
         var address = document.getElementById("addressInput").value;
@@ -71,7 +84,14 @@
           if (status == google.maps.GeocoderStatus.OK) {
             searchLocationsNear(results[0].geometry.location);
           } else {
-            alert(address + ' no encontrada');
+              swal({
+                title: '¡Lo sentimos!',
+                text: 'No encontramos distribuidores cercanos.',
+                imageUrl: 'icon/'+ mapType +'-not_found.png',
+                imageWidth: 100,
+                imageHeight: 100,
+                animation: false
+              })
           }
         });
       }
@@ -91,10 +111,11 @@
        }
 
        function searchLocationsNear(center) {
-         clearLocations();
+        clearLocations();
 
-         var radius = 5;
-         var searchUrl = 'storelocator.php?lat=' + center.lat() + '&lng=' + center.lng() + '&radius=' + radius;
+         var radius = (mapType != "office") ? 5 : 10; 
+
+         var searchUrl = 'storelocator.php?lat=' + center.lat() + '&lng=' + center.lng() + '&radius=' + radius + '&type=' + mapType;
          downloadUrl(searchUrl, function(data) {
            var xml = parseXml(data);
            var markerNodes = xml.documentElement.getElementsByTagName("marker");
@@ -107,12 +128,13 @@
                var name = markerNodes[i].getAttribute("name");
                var address = markerNodes[i].getAttribute("address");
                var distance = parseFloat(markerNodes[i].getAttribute("distance"));
+               var phone = markerNodes[i].getAttribute("phone");
+               var note = markerNodes[i].getAttribute("note");
                var latlng = new google.maps.LatLng(
                     parseFloat(markerNodes[i].getAttribute("lat")),
                     parseFloat(markerNodes[i].getAttribute("lng")));
-
                createOption(name, distance, i);
-               createMarker(latlng, name, address);
+               createMarker(latlng, name, address, phone, note); 
                bounds.extend(latlng);
              }
              map.fitBounds(bounds);
@@ -124,11 +146,11 @@
             }
             else{
               swal({
-                title: 'Ups',
-                text: 'No encontramos distribuidores cercanos.',
-                imageUrl: 'https://unsplash.it/400/200',
-                imageWidth: 300,
-                imageHeight: 150,
+                title: '¡Lo sentimos!',
+                text: 'No encontramos distribuidores en la dirección solicitada',
+                imageUrl: 'icon/'+ mapType +'-not_found.png',
+                imageWidth: 100,
+                imageHeight: 100,
                 animation: false
               })
             
@@ -137,11 +159,16 @@
         });
        }
 
-       function createMarker(latlng, name, address) {
-          var html = "<b>" + name + "</b> <br/>" + address;
+       function createMarker(latlng, name, address, phone, note) {
+          var html = "<div id='abastible-marker'>" +
+                      "<span class='abastible-name'>" + name + "</span>" + 
+                      "<span class='abastible-address'>" + address + "</span>" +
+                      "<span class='abastible-address'>" + phone + "</span>" + 
+                      "</div>";
           var marker = new google.maps.Marker({
             map: map,
-            position: latlng
+            position: latlng,
+            icon: 'icon/icono-'+ mapType +'.png'
           });
           google.maps.event.addListener(marker, 'click', function() {
             infoWindow.setContent(html);
@@ -186,7 +213,8 @@
        function doNothing() {}
   </script>
     <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDuCgtk--9ofQCuIceR9TFZhdXZemMVC5k&libraries=places&callback=initMap">
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBgrQJUjMwerGb7zOQssZMtmSAfvfWdR18&libraries=places&callback=initMap">
     </script>
+
   </body>
 </html>
