@@ -9,6 +9,7 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.6.6/sweetalert2.min.js"></script>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.6.6/sweetalert2.min.css">
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/2.4.1/core.js"></script>
+  <script src="http://code.jquery.com/jquery-2.2.4.min.js"></script>
   </head>
 
   <body onload="initMap()">
@@ -81,8 +82,13 @@
         var geocoder = new google.maps.Geocoder();
         
         geocoder.geocode({address: address}, function(results, status) {
+          clearLocations();
+          var bounds = new google.maps.LatLngBounds();
+
           if (status == google.maps.GeocoderStatus.OK) {
-            searchLocationsNear(results[0].geometry.location);
+            setPoint(results[0].geometry.location);
+            bounds.extend(results[0].geometry.location);
+            searchLocationsNear(results[0].geometry.location, bounds);
           } else {
               swal({
                 title: '¡Lo sentimos!',
@@ -110,33 +116,31 @@
          locationSelect.appendChild(option);
        }
 
-       function searchLocationsNear(center) {
-        clearLocations();
+       function searchLocationsNear(center, bounds) {
 
          var radius = (mapType != "office") ? 5 : 10; 
 
-         var searchUrl = 'storelocator.php?lat=' + center.lat() + '&lng=' + center.lng() + '&radius=' + radius + '&type=' + mapType;
-         downloadUrl(searchUrl, function(data) {
-           var xml = parseXml(data);
-           var markerNodes = xml.documentElement.getElementsByTagName("marker");
-           var bounds = new google.maps.LatLngBounds();
+         //var searchUrl = 'buscador.php?lat=' + center.lat() + '&lng=' + center.lng() + '&radius=' + radius + '&type=' + mapType;
+         $.getJSON(
+            "storelocator.php",
+            {lat : center.lat(), lng : center.lng(), radius: radius, type: mapType},
+            function(data) {
 
-            if(markerNodes.length > 0){
-
-             for (var i = 0; i < markerNodes.length; i++) {
-               var id = markerNodes[i].getAttribute("id");
-               var name = markerNodes[i].getAttribute("name");
-               var address = markerNodes[i].getAttribute("address");
-               var distance = parseFloat(markerNodes[i].getAttribute("distance"));
-               var phone = markerNodes[i].getAttribute("phone");
-               var note = markerNodes[i].getAttribute("note");
-               var latlng = new google.maps.LatLng(
-                    parseFloat(markerNodes[i].getAttribute("lat")),
-                    parseFloat(markerNodes[i].getAttribute("lng")));
-               createOption(name, distance, i);
-               createMarker(latlng, name, address, phone, note); 
-               bounds.extend(latlng);
-             }
+              if(data.length > 0){
+                for (var i = 0; i < data.length; i++) {
+                   var id = data[i].id;
+                   var name = data[i].name;
+                   var address = data[i].address;
+                   var distance = parseFloat(data[i].distance);
+                   var phone = data[i].phone;
+                   var note = data[i].note;
+                   var latlng = new google.maps.LatLng(
+                        parseFloat(data[i].lat),
+                        parseFloat(data[i].lng));
+                   createOption(name, distance, i);
+                   createMarker(latlng, name, address, phone, note); 
+                   bounds.extend(latlng);
+                 }
              map.fitBounds(bounds);
              locationSelect.style.visibility = "visible";
              locationSelect.onchange = function() {
@@ -156,7 +160,9 @@
             
             }
 
-        });
+        }).fail(function(data) {
+        console.log(data);
+  });
        }
 
        function createMarker(latlng, name, address, phone, note) {
@@ -174,6 +180,16 @@
             infoWindow.setContent(html);
             infoWindow.open(map, marker);
           });
+          markers.push(marker);
+        }
+
+        function setPoint(latlng) {
+          var marker = new google.maps.Marker({
+            map: map,
+            position: latlng,
+            icon: 'icon/icono-pin.png'
+          });
+          
           markers.push(marker);
         }
 
