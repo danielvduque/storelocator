@@ -10,6 +10,7 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.6.6/sweetalert2.min.css">
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/2.4.1/core.js"></script>
   <script src="http://code.jquery.com/jquery-2.2.4.min.js"></script>
+  <script src="https://use.fontawesome.com/12fbfdb954.js"></script>
   </head>
 
   <body onload="initMap()">
@@ -49,6 +50,19 @@
 
       params = getUrlVars();
       mapType = (params && params["maptype"]) ? params["maptype"] : "office";
+
+      var error_text = '';
+      switch(mapType) {
+        case 'office':
+          error_text = 'oficinas';
+          break;
+        case 'pump':
+          error_text = 'surtidores';
+          break;
+        case 'distributor':
+          error_text = 'distribuidores';
+          break;
+      }
 
         function initMap() {
           var sydney = {lat: -33.4727879, lng: -70.6298313};
@@ -92,7 +106,7 @@
           } else {
               swal({
                 title: '¡Lo sentimos!',
-                text: 'No encontramos distribuidores cercanos.',
+                text: 'No encontramos '+ error_text,
                 imageUrl: 'icon/'+ mapType +'-not_found.png',
                 imageWidth: 100,
                 imageHeight: 100,
@@ -134,11 +148,12 @@
                    var distance = parseFloat(data[i].distance);
                    var phone = data[i].phone;
                    var note = data[i].note;
+                   var city = data[i].city;
                    var latlng = new google.maps.LatLng(
                         parseFloat(data[i].lat),
                         parseFloat(data[i].lng));
                    createOption(name, distance, i);
-                   createMarker(latlng, name, address, phone, note); 
+                   createMarker(latlng, name, address, phone, note, city); 
                    bounds.extend(latlng);
                  }
              map.fitBounds(bounds);
@@ -149,9 +164,10 @@
              };
             }
             else{
+
               swal({
                 title: '¡Lo sentimos!',
-                text: 'No encontramos distribuidores en la dirección solicitada',
+                text: 'No encontramos '+ error_text +' en la dirección solicitada',
                 imageUrl: 'icon/'+ mapType +'-not_found.png',
                 imageWidth: 100,
                 imageHeight: 100,
@@ -165,12 +181,34 @@
   });
        }
 
-       function createMarker(latlng, name, address, phone, note) {
-          var html = "<div id='abastible-marker'>" +
+       function createMarker(latlng, name, address, phone, note, city) {
+          var html = '';
+          switch(mapType) {
+            case 'office':
+              html = "<div id='abastible-marker'>" +
                       "<span class='abastible-name'>" + name + "</span>" + 
-                      "<span class='abastible-address'>" + address + "</span>" +
-                      "<span class='abastible-address'>" + phone + "</span>" + 
+                      "<span class='abastible-address'><i class='fa fa-home' aria-hidden='true'></i>" + address + "</span>" +
+                      "<span class='abastible-address'><i class='fa fa-phone' aria-hidden='true'></i>" + phone + "</span>" + 
+                      "<span class='abastible-address'><i class='fa fa-calendar-times-o' aria-hidden='true'></i>" + note + "</span>" + 
                       "</div>";
+              break;
+            case 'pump':
+              var html = "<div id='abastible-marker'>" +
+                      "<span class='abastible-name'>" + city + "</span>" + 
+                      "<span class='abastible-address' style='padding-left: 0;'>" + name + "</span>" + 
+                      "<span class='abastible-address' style='padding-left: 0;'>" + address + "</span>" +
+                      "</div>";
+              break;
+            case 'distributor':
+              var html = "<div id='abastible-marker'>" +
+                      "<span class='abastible-name'>" + name + "</span>" + 
+                      "<span class='abastible-address'><i class='fa fa-home' aria-hidden='true'></i>" + address + "</span>" +
+                      "<span class='abastible-address'><i class='fa fa-phone' aria-hidden='true'></i>" + phone + "</span>" + 
+                      "<span class='abastible-address'>" + note + "</span>" + 
+                      "</div>";  
+              break;
+          }
+
           var marker = new google.maps.Marker({
             map: map,
             position: latlng,

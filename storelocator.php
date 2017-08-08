@@ -24,7 +24,7 @@
   $first = sprintf("SELECT * FROM markers WHERE type = '%s' ", mysqli_real_escape_string($connection, $mapType) );
 
 // Search the rows in the markers table
-  $query = sprintf("SELECT a.id, a.name, a.address, a.lat, a.lng, a.phone, a.note, ( 3959 * acos( cos( radians('%s') ) * cos( radians( a.lat ) ) * cos( radians( a.lng ) - radians('%s') ) + sin( radians('%s') ) * sin( radians( a.lat ) ) ) ) AS distance FROM (".$first.") AS a WHERE type = '%s' HAVING distance < '%s'",
+  $query = sprintf("SELECT a.id, a.name, a.address, a.lat, a.lng, a.phone, a.note, a.city, ( 3959 * acos( cos( radians('%s') ) * cos( radians( a.lat ) ) * cos( radians( a.lng ) - radians('%s') ) + sin( radians('%s') ) * sin( radians( a.lat ) ) ) ) AS distance FROM (".$first.") AS a WHERE type = '%s' HAVING distance < '%s'",
     mysqli_real_escape_string($connection, $center_lat),
     mysqli_real_escape_string($connection, $center_lng),
     mysqli_real_escape_string($connection, $center_lat),
