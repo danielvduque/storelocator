@@ -132,7 +132,7 @@
 
        function searchLocationsNear(center, bounds) {
 
-         var radius = (mapType != "office") ? 5 : 10; 
+         var radius = (mapType != "office") ? 3 : 10; 
 
          //var searchUrl = 'buscador.php?lat=' + center.lat() + '&lng=' + center.lng() + '&radius=' + radius + '&type=' + mapType;
          $.getJSON(
@@ -182,6 +182,8 @@
        }
 
        function createMarker(latlng, name, address, phone, note, city) {
+
+          var fixedPhone = (phone != "null") ? phone : 'No tiene';
           var html = '';
           switch(mapType) {
             case 'office':
@@ -194,16 +196,16 @@
               break;
             case 'pump':
               var html = "<div id='abastible-marker'>" +
-                      "<span class='abastible-name'>" + city + "</span>" + 
-                      "<span class='abastible-address' style='padding-left: 0;'>" + name + "</span>" + 
+                      "<span class='abastible-name'>" + name + "</span>" + 
                       "<span class='abastible-address' style='padding-left: 0;'>" + address + "</span>" +
+                      "<span class='abastible-address' style='padding-left: 0;'>" + city + "</span>" + 
                       "</div>";
               break;
             case 'distributor':
               var html = "<div id='abastible-marker'>" +
                       "<span class='abastible-name'>" + name + "</span>" + 
                       "<span class='abastible-address'><i class='fa fa-home' aria-hidden='true'></i>" + address + "</span>" +
-                      "<span class='abastible-address'><i class='fa fa-phone' aria-hidden='true'></i>" + phone + "</span>" + 
+                      "<span class='abastible-address'><i class='fa fa-phone' aria-hidden='true'></i>" + fixedPhone + "</span>" + 
                       "<span class='abastible-address'>" + note + "</span>" + 
                       "</div>";  
               break;
