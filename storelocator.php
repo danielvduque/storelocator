@@ -36,28 +36,14 @@
   if (!$result) {
     die("Invalid query: " . mysqli_error($connection));
   }
-
-  header("Content-type: text/xml");
   
-  $results = [];
+  $results = array();
 
   // Iterate through the rows, adding XML nodes for each
   while ($row = $result->fetch_assoc()){
 
     array_push($results, $row);
-/*
-    $node = $dom->createElement("marker");
-    $newnode = $parnode->appendChild($node);
-    $newnode->setAttribute("id", $row['id']);
-    $newnode->setAttribute("name", $row['name']);
-    $newnode->setAttribute("address", $row['address']);
-    $newnode->setAttribute("lat", $row['lat']);
-    $newnode->setAttribute("lng", $row['lng']);
-    $newnode->setAttribute("distance", $row['distance']);
-    $newnode->setAttribute("phone", $row['phone']);
-    $newnode->setAttribute("note", $row['note']);*/
   }
-  #echo $dom->saveXML();
 
 header('Content-Type: application/json');
 echo json_encode($results);

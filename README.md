@@ -2,6 +2,7 @@
 
 Google Maps API Store locator using PHP and Javascript.
 
-### Warnings: SweetAlert
-### Google Maps autocomplete added to input
+- Errors shown using SweetAlert CDN
+- Google Maps autocomplete API
 
+Live Demo
